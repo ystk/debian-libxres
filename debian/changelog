@@ -1,3 +1,9 @@
+libxres (2:1.0.4-1+squeeze) oldstable-security; urgency=low
+
+  * CVE-2013-1988
+
+ -- Moritz Muehlenhoff <jmm@debian.org>  Tue, 14 May 2013 20:42:01 +0000
+
 libxres (2:1.0.4-1) unstable; urgency=low
 
   [ Timo Aaltonen ]
