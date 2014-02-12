@@ -1,10 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/lib/XRes/XRes.c,v 1.3 2002/03/10 22:06:53 mvojkovi Exp $ */
 
-#define NEED_EVENTS
-#define NEED_REPLIES
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -15,11 +12,22 @@
 #include <X11/extensions/extutil.h>
 #include <X11/extensions/XResproto.h>
 #include <X11/extensions/XRes.h>
+#include <limits.h>
 
+#ifndef HAVE__XEATDATAWORDS
+static inline void _XEatDataWords(Display *dpy, unsigned long n)
+{
+# ifndef LONG64
+    if (n >= (ULONG_MAX >> 2))
+        _XIOError(dpy);
+# endif
+    _XEatData (dpy, n << 2);
+}
+#endif
 
 static XExtensionInfo _xres_ext_info_data;
 static XExtensionInfo *xres_ext_info = &_xres_ext_info_data;
-static char *xres_extension_name = XRES_NAME;
+static const char *xres_extension_name = XRES_NAME;
 
 #define XResCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, xres_extension_name, val)
@@ -41,7 +49,7 @@ static XExtensionHooks xres_extension_hooks = {
 };
 
 static XEXT_GENERATE_FIND_DISPLAY (find_display, xres_ext_info,
-                                   xres_extension_name, 
+                                   xres_extension_name,
                                    &xres_extension_hooks,
                                    0, NULL)
 
@@ -121,7 +129,12 @@ Status XResQueryClients (
     }
 
     if(rep.num_clients) {
-        if((clnts = Xmalloc(sizeof(XResClient) * rep.num_clients))) {
+        if (rep.num_clients < (INT_MAX / sizeof(XResClient)))
+            clnts = Xmalloc(sizeof(XResClient) * rep.num_clients);
+        else
+            clnts = NULL;
+
+        if (clnts != NULL) {
             xXResClient scratch;
             int i;
 
@@ -134,7 +147,7 @@ Status XResQueryClients (
             *num_clients = rep.num_clients;
             result = 1;
         } else {
-            _XEatData(dpy, rep.length << 2);
+            _XEatDataWords(dpy, rep.length);
         }
     }
 
@@ -173,7 +186,12 @@ Status XResQueryClientResources (
     }
 
     if(rep.num_types) {
-        if((typs = Xmalloc(sizeof(XResType) * rep.num_types))) {
+        if (rep.num_types < (INT_MAX / sizeof(XResType)))
+            typs = Xmalloc(sizeof(XResType) * rep.num_types);
+        else
+            typs = NULL;
+
+        if (typs != NULL) {
             xXResType scratch;
             int i;
 
@@ -186,10 +204,10 @@ Status XResQueryClientResources (
             *num_types = rep.num_types;
             result = 1;
         } else {
-            _XEatData(dpy, rep.length << 2);
+            _XEatDataWords(dpy, rep.length);
         }
     }
-    
+
     UnlockDisplay (dpy);
     SyncHandle ();
     return result;
