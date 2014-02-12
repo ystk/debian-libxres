@@ -1,10 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/lib/XRes/XRes.c,v 1.3 2002/03/10 22:06:53 mvojkovi Exp $ */
 
-#define NEED_EVENTS
-#define NEED_REPLIES
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -19,7 +16,7 @@
 
 static XExtensionInfo _xres_ext_info_data;
 static XExtensionInfo *xres_ext_info = &_xres_ext_info_data;
-static char *xres_extension_name = XRES_NAME;
+static const char *xres_extension_name = XRES_NAME;
 
 #define XResCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, xres_extension_name, val)
@@ -41,7 +38,7 @@ static XExtensionHooks xres_extension_hooks = {
 };
 
 static XEXT_GENERATE_FIND_DISPLAY (find_display, xres_ext_info,
-                                   xres_extension_name, 
+                                   xres_extension_name,
                                    &xres_extension_hooks,
                                    0, NULL)
 
@@ -189,7 +186,7 @@ Status XResQueryClientResources (
             _XEatData(dpy, rep.length << 2);
         }
     }
-    
+
     UnlockDisplay (dpy);
     SyncHandle ();
     return result;
