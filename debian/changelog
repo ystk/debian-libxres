@@ -1,3 +1,13 @@
+libxres (2:1.0.7-1) unstable; urgency=low
+
+  * New upstream release.
+  * Bump debhelper compat level to 7.
+  * Use dpkg-buildflags.
+  * Disable silent build rules.
+  * Bump Standards-Version to 3.9.4, no changes needed.
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 11 Aug 2013 16:02:30 +0200
+
 libxres (2:1.0.6-1+deb7u1) wheezy-security; urgency=high
 
   * integer overflows calculating memory needs for replies [CVE-2013-1988]

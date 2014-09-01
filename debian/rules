@@ -12,12 +12,6 @@ PACKAGE = libxres1
 
 include debian/xsfbs/xsfbs.mk
 
-CFLAGS = -Wall -g
-ifneq (,$(filter noopt,$(DEB_BUILD_OPTIONS)))
-	CFLAGS += -O0
-else
-	CFLAGS += -O2
-endif
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 	NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 	MAKEFLAGS += -j$(NUMJOBS)
@@ -42,16 +36,19 @@ build-stamp: configure $(STAMP_DIR)/genscripts
 	dh_testdir
 	mkdir -p build
 	cd build && \
-	../configure --prefix=/usr --mandir=\$${prefix}/share/man \
-	             --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
-	             --infodir=\$${prefix}/share/info $(confflags) \
-	             CFLAGS="$(CFLAGS)" 
+	../configure \
+	    --prefix=/usr \
+	    --mandir=\$${prefix}/share/man \
+	    --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
+	    --infodir=\$${prefix}/share/info \
+	    --disable-silent-rules \
+	    $(confflags) \
+	    $(shell DEB_CFLAGS_MAINT_APPEND=-Wall dpkg-buildflags --export=configure)
 	cd build && $(MAKE)
 	>$@
 
 clean: xsfclean
 	dh_testdir
-	rm -f build-stamp
 	rm -f config.cache config.log config.status
 	rm -f */config.cache */config.log */config.status
 	rm -f conftest* */conftest*
@@ -77,9 +74,9 @@ binary-arch: build install
 	dh_testroot
 
 	dh_installdocs
-	dh_install --sourcedir=debian/tmp --fail-missing --exclude=libXRes.la
+	dh_install --fail-missing --exclude=libXRes.la
 	dh_installman
-	dh_installchangelogs ChangeLog
+	dh_installchangelogs
 	dh_link
 	dh_strip --dbg-package=$(PACKAGE)-dbg
 	dh_compress
